@@ -41,11 +41,13 @@ Then open http://localhost:8000/ui/ and http://localhost:8000/docs
        └────────────▶ Crypto (RSA-PSS, AES-256-GCM)
 ```
 
-- **Frontend**: Minimal HTML/CSS/JS dashboard; phishing check, signed robot commands
-- **API**: FastAPI routes for phishing, crypto (sign/verify), robot
-- **Command Gateway**: Verifies signature, replay check, phishing risk; forwards to simulator
-- **Phishing AI**: NLTK + scikit-learn TF-IDF + LogisticRegression
-- **Crypto**: RSA-2048 signatures, AES-256-GCM, SHA-256
+- **Frontend**: Glassmorphic HTML/JS dashboard featuring Chart.js active-telemetry visualization, phishing checking, and biometric camera capture.
+- **API**: FastAPI routes for phishing, cryptography (sign/verify), hardware routing, and admin control panels.
+- **Biometric Layer**: OpenCV handles face registration and verification to generate session tokens, actively gating access.
+- **Command Gateway**: Verifies RSA-PSS signatures, enforces strict replay checks, scores phishing risks, and filters execution.
+- **Admin Management**: Dedicated portal to monitor Global Ledger transactions, dynamically revoke Operator access, and change master passphrases safely.
+- **Phishing AI**: NLTK + scikit-learn TF-IDF + LogisticRegression interceptor block.
+- **Crypto**: RSA-2048 signatures, AES-256-GCM, SHA-256 integrity layers.
 
 ---
 
@@ -53,12 +55,14 @@ Then open http://localhost:8000/ui/ and http://localhost:8000/docs
 
 | Threat | Mitigation |
 |--------|------------|
-| **AI-powered phishing** (deceptive messages) | ML classifier scores text; high-risk source rejected |
-| **Unauthorized commands** | RSA-PSS signature required; only holder of private key can sign |
-| **Replay attacks** | Duplicate (command, signature) within 5 min rejected |
-| **Injection** | Pydantic validation; env `extra="ignore"`; input sanitization |
-| **DoS** | Rate limiting (100 req/min per IP) |
-| **Tampering** | AES-GCM auth tag; RSA-PSS integrity |
+| **AI-powered phishing** (deceptive messages) | ML classifier scores text; high-risk source intercepted and held entirely or sent to Admin manual review |
+| **Unauthorized commands** | RSA-PSS signature required; only holder of private key can sign. |
+| **Identity Spoofing** | Hardened OpenCV Biometric authentication gates the Dashboard and generates the Operator JWT string. |
+| **Replay attacks** | Duplicate (command, signature) within 5 min rejected by temporal cache hash. |
+| **Injection** | Pydantic validation; env `extra="ignore"`; input sanitization. |
+| **DoS** | Rate limiting (100 req/min per IP). |
+| **Hardware Hijacking** | Admin Access Management Panel logs all valid Operators; admins can one-click revoke compromised biometric profiles and sever uplinks. |
+| **Tampering** | AES-GCM auth tag; RSA-PSS integrity. |
 
 ---
 
