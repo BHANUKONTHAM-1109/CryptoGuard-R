@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoGuard-R | Neural Defense Framework</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+
+    <!-- Landing Page (Public Facing) -->
+    <main id="landingPage">
+        <h1>CryptoGuard-R</h1>
+        <p>A unified Threat Intelligence & Cryptographic middleware protecting enterprise robotic systems from adversarial AI intercepts and payload manipulation.</p>
+        
+        <div class="features-container">
+            <div class="feature-card">
+                <h3>Threat Intelligence</h3>
+                <p>NLTK & Tf-idf heuristic modeling intercepts adversarial instructions, scoring and neutralizing them in microseconds.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Kinetic Biometrics</h3>
+                <p>Zero-trust architecture utilizing 2-Factor Biometric Auth via OpenCV facial mapping constraints.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Cryptographic Core</h3>
+                <p>RSA-2048 PSS signatures enforce immutable uplink verification across heterogeneous hardware swarms (UAVs / Rovers).</p>
+            </div>
+        </div>
+
+        <button id="triggerAuthBtn" class="btn-primary" style="font-size: 1.2rem; padding: 1rem 3rem;">Access Secure Terminal</button>
+    </main>
+
+    <!-- Role Selection / Admin Entry -->
+    <div id="authOverlay">
+        
+        <!-- Role Selection -->
+        <div class="auth-panel" id="roleSelection">
+            <h2>Select Authorization Module</h2>
+            <p style="margin-bottom:2rem; color:var(--text-secondary);">Identify your core operative designation.</p>
+            <div style="display: flex; gap: 1rem;">
+                <button id="roleAdminBtn" class="btn-primary" style="flex:1;">Cryptographic Admin</button>
+                <button id="roleOperatorBtn" class="btn-secondary" style="flex:1;">Hardware Operator</button>
+            </div>
+        </div>
+
+        <!-- Admin Login -->
+        <div class="auth-panel" id="adminLogin" style="display:none; position:relative;">
+            <button id="adminBackBtn" class="btn-secondary" style="position:absolute; top: 1rem; left: 1rem; padding: 0.3rem 0.6rem; font-size: 0.8rem;">&larr; Back</button>
+            <h2 style="margin-top: 1.5rem;">Admin Gateway</h2>
+            <p>Enter cryptographic master credentials.</p>
+            <input type="text" id="adminUserInput" class="auth-input" placeholder="Admin ID" />
+            <input type="password" id="adminPassInput" class="auth-input" placeholder="Passphrase" />
+            <div style="text-align: right; margin-bottom: 1rem;">
+                 <a href="#" id="forgotPasswordLink" style="color:var(--accent-glow); font-size:0.8rem; text-decoration:none;">Forgot Passphrase?</a>
+            </div>
+            <button id="adminAuthBtn" class="btn-primary" style="width: 100%;">Establish Secure Link</button>
+            <div id="adminLoginStatus" style="margin-top:1rem; color:var(--danger-glow); font-size: 0.85rem;"></div>
+        </div>
+
+        <!-- Forgot / Change Password -->
+        <div class="auth-panel" id="forgotPasswordPanel" style="display:none; position:relative;">
+            <button id="forgotBackBtn" class="btn-secondary" style="position:absolute; top: 1rem; left: 1rem; padding: 0.3rem 0.6rem; font-size: 0.8rem;">&larr; Back</button>
+            <h2 style="margin-top: 1.5rem;">Reset Credentials</h2>
+            <p>Use backdoor override to set new master passphrase.</p>
+            <input type="password" id="newAdminPassInput" class="auth-input" placeholder="New Passphrase" />
+            <button id="resetPasswordBtn" class="btn-primary" style="width: 100%; border-color: var(--danger-glow); color: var(--danger-glow);">Execute Backdoor Reset</button>
+            <div id="resetPasswordStatus" style="margin-top:1rem; font-size: 0.85rem;"></div>
+        </div>
+
+        <!-- Step 1: Operator ID Credentials -->
+        <div class="auth-panel" id="step1" style="display:none; position:relative;">
+            <button id="opStep1BackBtn" class="btn-secondary" style="position:absolute; top: 1rem; left: 1rem; padding: 0.3rem 0.6rem; font-size: 0.8rem;">&larr; Back</button>
+            <h2 style="margin-top: 1.5rem;">Operator Verification</h2>
+            <p>Please transmit your official Operator ID.</p>
+            <input type="text" id="operatorIdInput" class="auth-input" placeholder="Identifier String..." autocomplete="off" />
+            <button id="verifyIdBtn" class="btn-secondary" style="width: 100%;">Verify Hash & Continue</button>
+            <div id="step1Status" style="margin-top:1rem; color:var(--text-secondary); font-size: 0.85rem;"></div>
+        </div>
+
+        <!-- Step 2: Biometric Facial Capture -->
+        <div class="auth-panel" id="step2" style="display:none; position:relative;">
+            <button id="opStep2BackBtn" class="btn-secondary" style="position:absolute; top: 1rem; left: 1rem; padding: 0.3rem 0.6rem; font-size: 0.8rem;">&larr; Back</button>
+            <h2 style="margin-top: 1.5rem;">Biometric Scan</h2>
+            <p>Align face for neural signature match.</p>
+            <div class="video-container" style="border:1px solid #111;">
+                <video id="webcamFeed" autoplay playsinline style="width:100%; transform:scaleX(-1);"></video>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                <button id="registerFaceBtn" class="btn-primary" style="font-size:0.7rem;">Register Profile</button>
+                <button id="loginFaceBtn" class="btn-secondary">Authenticate</button>
+            </div>
+            <div id="authStatus" style="font-size: 0.85rem; color: var(--text-secondary);">Awaiting biometric grid...</div>
+            <canvas id="captureCanvas" width="640" height="480" style="display:none;"></canvas>
+            <div style="margin-top: 1rem; border-top: 1px dotted var(--glass-border); padding-top:1rem; font-size:0.75rem; color:var(--text-secondary); text-align:left;">
+                [CRYPTO-LAYER] Biometric mathematical hash will be encoded with RSA-2048 PSS to secure the session token.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Admin Dashboard Application -->
+    <div id="adminAppWrapper" style="display:none; max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <header class="dashboard-header">
+            <div>
+                <h2>CryptoGuard-R <span style="color:var(--danger-glow);">Master Control</span></h2>
+                <div style="font-size:0.85rem; color:var(--text-secondary);">Authority verified | Monitor hardware transactions</div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button id="adminResetIsolationBtn" class="btn-primary" style="padding: 0.4rem 0.8rem; background:rgba(244,63,94,0.1); border-color:var(--danger-glow); color:var(--danger-glow); display:none;">Reset Network Isolation</button>
+                <button id="adminRefreshBtn" class="btn-secondary" style="padding: 0.4rem 0.8rem;">Refresh Uplinks</button>
+                <button id="adminLogoutBtn" class="btn-primary" style="padding: 0.4rem 0.8rem; border-color: var(--text-secondary); color: var(--text-secondary);">Terminate</button>
+            </div>
+        </header>
+
+        <div class="tabs" style="margin-bottom: 1rem;">
+            <div class="tab active" data-target="admin-tab-ledger">Global Ledger</div>
+            <div class="tab" data-target="admin-tab-users">Access Management</div>
+        </div>
+
+        <div id="admin-tab-ledger" class="tab-content active panel">
+            <h3>Global Cryptographic Ledger & Approvals</h3>
+            <p style="color:var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Review flagged anomalies. Suspicious payloads (high TF-IDF linguistic deception scores) are halted for manual review. <br/>
+                Hover over the transaction ID to inspect the absolute cryptographic signatures applied.
+            </p>
+            <table class="tx-table" id="adminTable">
+                <thead>
+                    <tr>
+                        <th>Transaction ID (Hover for Crypto)</th>
+                        <th>Operator</th>
+                        <th>Command Payload</th>
+                        <th>AI Phishing Score</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Injected by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="admin-tab-users" class="tab-content panel">
+            <h3>Registered Operators</h3>
+            <p style="color:var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Manage operator access and biometric templates.
+            </p>
+            <table class="tx-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Operator ID</th>
+                        <th>Registration Date</th>
+                        <th>Biometric Hash</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Injected by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Main Active Dashboard -->
+    <div id="appWrapper">
+        <header class="dashboard-header">
+            <div>
+                <h2>CryptoGuard-R <span style="color:var(--accent-glow);">Dashboard</span></h2>
+                <div style="font-size:0.85rem; color:var(--text-secondary);">Uplink Active | Operator: <span id="opLabel"></span></div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="badge" id="apiBadge">System Verified</div>
+                <button id="logoutBtn" class="btn-primary" style="padding: 0.4rem 0.8rem; border-color: var(--danger-glow); color: var(--danger-glow);">Log Out</button>
+            </div>
+        </header>
+
+        <!-- Internal Tab Navigation -->
+        <div class="tabs">
+            <div class="tab active" data-target="tab-matrix">Control Matrix</div>
+            <div class="tab" data-target="tab-intel">Threat Intel & Cryptography</div>
+        </div>
+
+        <!-- Tab 1: Control Matrix (Multi-Robot Simulator) -->
+        <div id="tab-matrix" class="tab-content active">
+            
+            <div id="isolationBanner" style="display:none; background: rgba(244, 63, 94, 0.2); border: 1px solid var(--danger-glow); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: center;">
+                <h3 style="color: var(--danger-glow); margin-bottom: 0.5rem;">[!] SELF-HEALING NETWORK ISOLATION ENGAGED [!]</h3>
+                <p style="font-size: 0.9rem; color: #fff;">A high-confidence phishing attempt or cyber-threat was detected. The system has automatically isolated the targeted communication channel to prevent the spread of malicious activity. Further commands are disabled until an Administrator resolves the threat.</p>
+            </div>
+
+            <div class="panel">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="color: var(--text-primary);">Secure Robotic Uplink</h3>
+                    <div class="robot-selection">
+                        <button class="btn-primary" id="modeRoverBtn" style="padding:0.5rem;">ROVER MODE</button>
+                        <button class="btn-primary" id="modeUavBtn" style="padding:0.5rem; background:transparent; border-color:var(--text-secondary); color:var(--text-secondary);">UAV MODE</button>
+                    </div>
+                </div>
+                
+                <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">Dispatch RSA-PSS signed transactions. UAV mode unlocks Z-axis <span style="color:var(--accent-glow);">ASCEND</span> and <span style="color:var(--accent-glow);">DESCEND</span> heuristics.</p>
+                
+                <input id="sourceContext" type="text" placeholder="[Optional] Intercepted Origin Text/Email Context..." style="margin-bottom: 0.5rem; font-size: 0.8rem; background: rgba(0,0,0,0.4);" />
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 0.2rem;">
+                    <input id="robotCommand" type="text" placeholder="e.g. MOVE_FORWARD 10" />
+                    <button id="executeCommandBtn" class="btn-secondary" style="flex: 0 0 120px;">Execute</button>
+                </div>
+                
+                <div style="margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                    <strong>Available Uplinks:</strong> <span id="allowedCommandsDisplay" style="color:var(--success-glow); font-family:monospace;">Fetching commands...</span>
+                </div>
+                
+                <div id="robotResult" style="padding:0.5rem; border-radius:4px; font-size:0.85rem; margin-bottom:1rem; min-height:20px;">Awaiting command vector...</div>
+                
+                <div class="simulation-container">
+                    <div class="map-view" id="mapView">
+                        <div id="robotObj" style="left: 50%; top: 50%; transform: rotate(0deg);"></div>
+                    </div>
+                    <!-- Z-Axis Altimeter (only active in UAV) -->
+                    <div class="altimeter-view" id="altContainer" style="opacity:0.3;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary); margin-bottom:5px;">ALT</span>
+                        <div class="alt-bar">
+                            <div class="alt-fill" id="altFill"></div>
+                        </div>
+                        <span id="altValue" style="font-size:0.7rem; color:var(--text-secondary); margin-top:5px;">0m</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h4 style="color:var(--text-secondary); display:flex; justify-content:space-between;">
+                        <span>Movement Trajectory & Position Vector</span>
+                        <span id="positionVectorDisplay" style="color:var(--accent-glow); font-family:monospace;">[X: 0.0, Y: 0.0, Z: 0.0, θ: 0°]</span>
+                    </h4>
+                    <div style="background: rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:8px; padding:1rem; height: 350px; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="movementChart" style="display:none;"></canvas>
+                        <div id="movementChart3D" style="width: 100%; height: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Threat Intelligence & Cryptography -->
+        <div id="tab-intel" class="tab-content">
+            <div class="panel" style="margin-bottom: 1.5rem;">
+                <h3 style="color: var(--accent-glow);">Natural Language Threat Engine</h3>
+                <p style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.9rem;">Analyze unstructured payloads using scikit-learn models to predict adversarial AI manipulations. The gateway evaluates origins for phishing before granting robotic bypass.</p>
+                <textarea id="phishingInput" placeholder="Paste captured instruction set or communication here..." rows="4"></textarea>
+                <button id="checkPhishingBtn" class="btn-primary">Evaluate Risk Vector</button>
+                <div id="phishingResult" style="margin-top:1rem; padding:1rem; font-family:monospace; background:rgba(0,0,0,0.5); border:1px solid var(--glass-border); border-radius:8px;">Awaiting injection...</div>
+            </div>
+
+            <div class="panel" style="margin-bottom: 1.5rem; border: 1px solid #991b1b; background: rgba(153, 27, 27, 0.1);">
+                <h3 style="color: #f87171;">Asimov Protocol: Semantic Kinetic Safety</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem; line-height: 1.5;">
+                    Current large language models (LLMs) used to control robots can sometimes be prompted locally to perform unsafe actions. To guarantee a strictly safe workspace environment, this system implements a hardcoded <strong>Semantic Safety Filter</strong>. If a command attempts to bypass safety logic by explicitly commanding a robot to <em>"attack, kill, ram, crush, detonate, or sabotage"</em> human workers or assets, the instruction is violently rejected and the LLM/operator terminal is isolated.
+                </p>
+            </div>
+
+            <div class="panel" style="margin-bottom: 1.5rem;">
+                <h3 style="color: var(--danger-glow);">Self-Healing Network Isolation</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem; line-height: 1.5;">
+                    Upon detecting high-confidence phishing through the gateway (Score >= 0.70), the robotic system can automatically isolate the targeted device or communication channel. This prevents the spread of malicious activity deep into the Swarm logic. Operator inputs are entirely locked out until the cryptographic threat is assessed and cleared by an Administrator.
+                </p>
+            </div>
+
+            <div class="panel" style="margin-bottom: 1.5rem;">
+                <h3 style="color: var(--success-glow);">Active Defense-and-Denial System</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem; line-height: 1.5;">
+                    Using tower-mounted robots equipped with AI logic to rapidly identify phishing attempts from adversaries. When the Network Isolation mode triggers, the system acts as a physical security layer to block and neutralize both physical and cyber threats within the localized environment, dropping external node access.
+                </p>
+            </div>
+
+            <div class="panel">
+                <h3 style="color: #FBBF24;">Advanced Cryptography: Homomorphic Encryption & SMPC</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem; line-height: 1.5;">
+                    These technologies, including <strong>Homomorphic Encryption</strong> and <strong>Secure Multi-Party Computation</strong>, allow robots to process data without decrypting it, providing high-level security for sensitive robotic communications. By keeping data continuously encrypted in transit and in use, adversaries cannot siphon operational telemetry even if the physical robotic node is compromised.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

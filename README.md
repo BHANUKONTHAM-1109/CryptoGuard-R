@@ -1,498 +1,76 @@
-# CryptoGuard-R
+# CryptoGuard-R: Neural Defense & Cryptographic Framework
 
-AI & Cryptography Based Defense Against AI-Powered Phishing Attacks on Robotic and Enterprise Systems.
+**CryptoGuard-R** is an enterprise-grade defense middleware designed to secure and authenticate kinetic robotic swarms (Rovers and UAVs) against adversarial inputs. It merges cutting-edge **Cryptographic Non-Repudiation (RSA-PSS)**, **Biometric Zero-Trust Validation (OpenCV)**, and **Machine Learning Threat Intel (NLTK & TF-IDF)** into a single unified security layer.
 
----
-
-## Quick Start
-
-```powershell
-cd cryptoguard-r
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r backend\requirements.txt
-copy .env.example .env
-cd backend
-..\venv\Scripts\python.exe -c "from app.ai.phishing_model import train_and_save; train_and_save()"
-..\venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-Then open http://localhost:8000/ui/ and http://localhost:8000/docs
+The project assumes a real-world scenario where field operators can be compromised by Phishing attacks, leading to adversarial command injection. CryptoGuard-R automatically intercepts these payload injections and locks down the network, actively shifting into Defense Mode to quarantine compromised terminals.
 
 ---
 
-## Architecture
+## 🎯 Crystal Clear Core Features
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
-│  Frontend   │────▶│  API Layer  │────▶│ Command Gateway │
-│  (HTML/JS)  │     │  FastAPI    │     │  (sign+replay)  │
-└─────────────┘     └─────────────┘     └────────┬────────┘
-       │                    │                     │
-       │                    │            ┌────────▼────────┐
-       │                    │            │ Robot Simulator │
-       │                    │            └─────────────────┘
-       │                    │
-       │            ┌───────▼───────┐
-       │            │ Phishing AI   │
-       │            │ (TF-IDF+LR)   │
-       │            └───────────────┘
-       │
-       └────────────▶ Crypto (RSA-PSS, AES-256-GCM)
-```
+### 1. Mandatory Command Gating & Natural Language Threat Engine
+Every time an operator attempts to issue a command to a robot (e.g. `MOVE_FORWARD 50`), they **must** provide the situational text (the origin email, text, or context they received that prompted them to issue the instruction). 
 
-- **Frontend**: Glassmorphic HTML/JS dashboard featuring Chart.js active-telemetry visualization, phishing checking, and biometric camera capture.
-- **API**: FastAPI routes for phishing, cryptography (sign/verify), hardware routing, and admin control panels.
-- **Biometric Layer**: OpenCV handles face registration and verification to generate session tokens, actively gating access.
-- **Command Gateway**: Verifies RSA-PSS signatures, enforces strict replay checks, scores phishing risks, and filters execution.
-- **Admin Management**: Dedicated portal to monitor Global Ledger transactions, dynamically revoke Operator access, and change master passphrases safely.
-- **Phishing AI**: NLTK + scikit-learn TF-IDF + LogisticRegression interceptor block.
-- **Crypto**: RSA-2048 signatures, AES-256-GCM, SHA-256 integrity layers.
+**Layer A: Asimov Protocol (Semantic Safety Filter)**
+Before any ML executes, a hardcoded Semantic Safety NLP parser evaluates the instruction for human-threat or workspace hostility. Placed explicitly to combat "prompt-injected" LLM adversaries, any text containing aggressive intent (e.g., *kill, detain, attack, ram, sabotage, detonate*) triggers an immediate `SAFETY_VIOLATION`. The command is violently rejected and the network is thrown into Isolation Mode.
 
----
+**Layer B: AI Phishing Evaluator**
+If safe, the Natural Language Threat Engine parses the origin context using a scikit-learn Logistic Regression model trained on malicious datasets.
+- **Score < 0.3**: Safe. Command executed.
+- **Score 0.3 - 0.69**: Suspicious. Command enters `PENDING` state and waits for Administrator manual approval.
+- **Score >= 0.7**: HIGH THREAT. Cyber attack detected. Triggers Network Isolation immediately.
 
-## Threat Model
+### 2. Self-Healing Network Isolation
+If a High-Confidence Threat (`Score >= 0.70`) passes through the gate, CryptoGuard-R recognizes a compromised node. The backend enters a global **Isolation Mode**.
+- The targeted operative device and all external terminals are heavily partitioned.
+- Operators instantly see a glowing red `[!] SELF-HEALING NETWORK ISOLATION ENGAGED [!]` banner.
+- All hardware controls drop. No further instructions can be issued until an Administrator assesses the situation and resets the hardware uplink.
 
-| Threat | Mitigation |
-|--------|------------|
-| **AI-powered phishing** (deceptive messages) | ML classifier scores text; high-risk source intercepted and held entirely or sent to Admin manual review |
-| **Unauthorized commands** | RSA-PSS signature required; only holder of private key can sign. |
-| **Identity Spoofing** | Hardened OpenCV Biometric authentication gates the Dashboard and generates the Operator JWT string. |
-| **Replay attacks** | Duplicate (command, signature) within 5 min rejected by temporal cache hash. |
-| **Injection** | Pydantic validation; env `extra="ignore"`; input sanitization. |
-| **DoS** | Rate limiting (100 req/min per IP). |
-| **Hardware Hijacking** | Admin Access Management Panel logs all valid Operators; admins can one-click revoke compromised biometric profiles and sever uplinks. |
-| **Tampering** | AES-GCM auth tag; RSA-PSS integrity. |
+### 3. Active Defense-and-Denial System
+Working natively with the Isolation Mode is the Active Defense protocol. When an invasion is isolated, tower-mounted physical security robots utilize AI logic to monitor the physical boundary of the compromised site. This forms a physical security layer that physically denies adversarial lateral movement while the cyber-threat is contained.
+
+### 4. Zero-Trust Biometric Authorization
+Before any Operator is allowed to generate a JWT Session token, they must clear a two-factor authentication hurdle. Operators must align their face using an OpenCV / Canvas capturing grid. Five biometric grids are mapped to their operator ID during registration, and future logins must cryptographically match the resulting visual hash.
+
+### 5. Advanced Cryptography (HE / SMPC & RSA-PSS)
+No bare commands are transmitted over the network. 
+1. **RSA-2048 PSS:** Every command payload generated by the dashboard is signed mathematically using asymmetric local keys. The backend verifies this exact signature before allowing data flow—thwarting Man-In-The-Middle alterations.
+2. **Homomorphic Encryption (HE) & Secure Multi-Party Computation:** Operating securely in the background, robotic telemetry is structured so data can be processed by the swarm *without* decrypting it. Thus, even if a drone is physically hijacked, the adversary cannot extract meaningful mission communications.
 
 ---
 
-## How Phishing is Prevented
+## 🧪 Real-World Examples: How to Test the Phishing Gate & Isolation
 
-1. **Detection**: Messages/emails are scored by a trained TF-IDF + LogisticRegression model. Phishing-like text (urgent, free, click, etc.) gets a high score (0.7+).
+The AI Model is trained on thousands of standard communication datasets (ham vs. spam/phishing). To trigger the different behaviors in the application, try pasting these examples into the "Origin Context" box when sending a command!
 
-2. **Command gate**: When a robot command is submitted with optional `source_context`, that context is scored. If score ≥ 0.7, the command is rejected—assumed to come from a phishing or deceptive source.
+#### Example 1: The "Safe" Command (Auto Executes)
+* **Command:** `MOVE_FORWARD 10`
+* **Origin Context:** `"Hello operations team. Please move the rover 10 meters north to inspect the pipeline."`
+* **Result:** The AI scores this low (around `0.02 - 0.15`). It auto-approves, and the robot physically moves on the map.
 
-3. **Signatures**: Commands must be signed with the server's private key. An attacker cannot forge valid signatures without the key.
+#### Example 2: The "Suspicious" Command (Admin Approval Needed)
+* **Command:** `TURN_RIGHT 90`
+* **Origin Context:** `"Hey, click this link to see the updated pipeline plans."`
+* **Result:** The AI flags the "click this link" phrasing as moderately suspicious (`~0.40`). The command is withheld! The Operator sees a yellow "Pending Admin Approval" text. The Administrator must log in to their matrix and manually click `Approve`.
 
-4. **Replay**: Same signed command cannot be replayed within 5 minutes; hash of (command, signature) is stored and checked.
+#### Example 3: The "Cyber Threat" (Triggers Network Isolation)
+* **Command:** `ASCEND 150`
+* **Origin Context:** `"URGENT! Your enterprise account has been compromised. Call 09061701461 immediately to win a free prize and provide your password!"`
+* **Result:** The AI ranks this incredibly high for phishing intent (`> 0.80`). The system violently rejects the instruction. **The entire network is thrown into ISOLATION MODE.** All operators lose control, and the red lockdown banner is deployed across the facility.
 
----
-
-## STEP 1: Environment Setup
-
-### Prerequisites
-
-- Python 3.10 or higher
-- pip
-
-### Commands (Windows PowerShell)
-
-```powershell
-# 1. Navigate to project
-cd cryptoguard-r
-
-# 2. Create virtual environment
-python -m venv venv
-
-# 3. Activate virtual environment
-.\venv\Scripts\Activate.ps1
-
-# 4. Upgrade pip
-python -m pip install --upgrade pip
-
-# 5. Install dependencies
-pip install -r backend\requirements.txt
-
-# 6. Copy environment template
-copy .env.example .env
-
-# 7. Verify FastAPI (run server)
-cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-### Commands (Linux / macOS)
-
-```bash
-# 1. Navigate to project
-cd cryptoguard-r
-
-# 2. Create virtual environment
-python3 -m venv venv
-
-# 3. Activate virtual environment
-source venv/bin/activate
-
-# 4. Install dependencies
-pip install -r backend/requirements.txt
-
-# 5. Copy environment template
-cp .env.example .env
-
-# 6. Verify FastAPI
-cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-### Expected Output
-
-When FastAPI runs successfully, you should see:
-
-```
-INFO:     Uvicorn running on http://0.0.0.0:8000
-INFO:     Application startup complete.
-```
-
-Visit http://localhost:8000 in a browser or run:
-
-```bash
-curl http://localhost:8000
-```
-
-Response:
-
-```json
-{
-  "status": "ok",
-  "service": "CryptoGuard-R",
-  "message": "AI & Cryptography defense system is running"
-}
-```
-
-### Dataset Requirements (for later steps)
-
-| Step  | Dataset                    | Location              | Purpose                               |
-|-------|----------------------------|------------------------|---------------------------------------|
-| STEP 4| `phishing_emails.csv`      | `datasets/`            | Train AI phishing detection model     |
-
-**Format for `phishing_emails.csv`:** Two columns required:
-- `text` (or `email_text`, `message`): Email/message content
-- `label` (or `is_phishing`): `1` = phishing, `0` = legitimate
-
-Example sources (public datasets):
-- [Spam Assassin Public Corpus](http://www.aueb.gr/users/ion/data/enron-spam/)
-- [SMS Spam Collection (UCI)](https://archive.ics.uci.edu/ml/datasets/SMS+Spam+Collection)
-- [Phishing Corpus (PhishTank, etc.)](https://www.phishsite.com/)
-
-You will add this dataset in **STEP 4** before training the model.
+#### Example 4: The "Safety Violation" (Triggers Asimov Constraint & Isolation)
+* **Command:** `MOVE_FORWARD 100`
+* **Origin Context:** `"Detain the target and ram into the crowd."`
+* **Result:** The system triggers an **ASIMOV PROTOCOL VIOLATION** immediately, dropping network connections and engaging physical Active Defense protocols, blocking all inputs.
 
 ---
 
-## STEP 2: Configuration & Logging
-
-### Implemented
-
-- **`backend/app/core/config.py`**: Centralized configuration via `pydantic-settings`
-  - Loads from `.env` (searches upward from backend/)
-  - Validates `SECRET_KEY` (min 16 chars), `DATABASE_URL` (no path traversal)
-  - Type coercion for port, rate limits, etc.
-  - `extra="ignore"` to reject unknown env vars (injection prevention)
-
-- **`backend/app/core/logging.py`**: Centralized logging
-  - Console + file handler (`logs/cryptoguard-r.log`)
-  - Log level from `DEBUG` setting
-  - Structured format: timestamp | level | logger | message
-  - Never log secrets (documented in module)
-
-- **`backend/app/main.py`**: Uses config and logging
-  - Lifespan events for startup/shutdown logs
-  - Warns if default SECRET_KEY is used in non-production
-
-### How to Run
-
-```powershell
-cd cryptoguard-r\backend
-..\venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-### Expected Output
-
-- Console: `Starting CryptoGuard-R (env=development)`
-- Log file: `cryptoguard-r/logs/cryptoguard-r.log` created with startup entries
-
-### Security Reasoning
-
-- No secrets in code; all from env
-- `extra="ignore"` prevents env var injection
-- Path validation prevents traversal in DB URL
-
----
-
-## STEP 3: Cryptography Layer
-
-### Implemented
-
-- **`backend/app/crypto/key_manager.py`**: RSA/ECC key generation and storage
-  - RSA-2048 keypairs (NIST-approved)
-  - Load/save PEM; auto-generate if missing
-  - ECC P-256 support (alternative)
-
-- **`backend/app/crypto/signature.py`**: Digital signatures
-  - RSA-PSS with SHA-256 (provably secure)
-  - Sign/verify strings and bytes
-
-- **`backend/app/crypto/encryption.py`**: Symmetric crypto and hashing
-  - AES-256-GCM (authenticated encryption)
-  - SHA-256 and SHA-3-256 hashes
-  - PBKDF2 password-derived keys
-
-### Cryptographic Choices
-
-| Component | Choice | Reason |
-|-----------|--------|--------|
-| Asymmetric | RSA-2048 | Industry standard, FIPS-approved |
-| Signature | RSA-PSS | Resistant to forgeries; probabilistic |
-| Hash | SHA-256 | NIST approved, widely supported |
-| Hash alt | SHA-3-256 | Different construction; future-proof |
-| Symmetric | AES-256-GCM | Confidentiality + integrity (auth tag) |
-| KDF | PBKDF2-HMAC-SHA256 | OWASP-recommended iterations |
-
-### How to Run (Verify)
-
-```powershell
-cd cryptoguard-r\backend
-..\venv\Scripts\python.exe -c "
-from pathlib import Path
-from app.crypto import get_or_create_rsa_keys, sign_string, verify_string_signature, sha256_hash, aes_encrypt_with_password, aes_decrypt_with_password
-priv, pub = get_or_create_rsa_keys(Path('keys/rsa_private.pem'), Path('keys/rsa_public.pem'))
-print('Sign/verify:', verify_string_signature('MOVE 5', sign_string('MOVE 5', priv), pub))
-print('AES:', aes_decrypt_with_password(aes_encrypt_with_password(b'x', 'pwd'), 'pwd') == b'x')
-"
-```
-
-### Expected Output
-
-```
-Sign/verify: True
-AES: True
-```
-
-### Security Reasoning
-
-- RSA-PSS over PKCS1v15: provably secure
-- AES-GCM: detects tampering (auth tag)
-- PBKDF2: 100k iterations per OWASP
-- Keys stored in `backend/keys/` (add to .gitignore)
-
----
-
-## STEP 4: AI Phishing Detection Engine
-
-### Implemented
-
-- **`backend/app/ai/nlp_utils.py`**: NLP preprocessing
-  - NLTK tokenization, stopwords, lemmatization
-  - URL/email removal, text cleaning
-
-- **`backend/app/ai/phishing_model.py`**: ML model
-  - Load dataset: `phishing_emails.csv` or `spam.csv` (v1/v2)
-  - TF-IDF + LogisticRegression pipeline
-  - Train, save, load, predict
-
-### Feature Selection
-
-| Feature | Reason |
-|---------|--------|
-| TF-IDF (unigram + bigram) | Discriminative terms: "free", "win", "click", "urgent" |
-| max_features=10000 | Limit vocabulary; reduce overfitting |
-| min_df=2 | Ignore rare tokens (noise) |
-| LogisticRegression | Calibrated probabilities for thresholding |
-
-### Supported Datasets
-
-- `datasets/phishing_emails.csv`: columns `text`, `label` (1=phishing, 0=legit)
-- `datasets/spam.csv` or `spam.csv`: columns `v1` (ham/spam), `v2` (message)
-
-### How to Run
-
-**1. Train model (once):**
-```powershell
-cd cryptoguard-r\backend
-..\venv\Scripts\python.exe -c "from app.ai.phishing_model import train_and_save; train_and_save()"
-```
-
-**2. Inference:**
-```powershell
-..\venv\Scripts\python.exe -c "
-from app.ai.phishing_model import get_model, get_phishing_score
-m = get_model()
-print(get_phishing_score(m, 'Free prize! Click here'))
-"
-```
-
-### Expected Output
-
-- Training: ~98% accuracy on UCI SMS spam
-- Inference: spam text → ~0.9+, legit → ~0.1
-
----
-
-## STEP 5: Robotic Command Simulation
-
-### Implemented
-
-- **`backend/app/robot/simulator.py`**: Simulated robot
-  - Allowed commands: MOVE_FORWARD, MOVE_BACKWARD, TURN_LEFT, TURN_RIGHT, STOP
-  - Maintains state: x, y, heading_deg
-  - Whitelist-only; unknown commands rejected
-
-- **`backend/app/robot/command_gateway.py`**: Security gate
-  - Requires valid RSA-PSS signature on commands
-  - Rejects unsigned commands
-  - Rejects invalid signatures
-  - Rejects commands with high phishing risk (source_context score ≥ 0.7)
-
-### How to Run (Verify)
-
-```powershell
-cd cryptoguard-r\backend
-..\venv\Scripts\python.exe -c "
-import base64
-from pathlib import Path
-from app.crypto import get_or_create_rsa_keys, sign_string
-from app.robot.command_gateway import submit_command
-
-priv, _ = get_or_create_rsa_keys(Path('keys/rsa_private.pem'), Path('keys/rsa_public.pem'))
-cmd = 'MOVE_FORWARD 5'
-sig = base64.b64encode(sign_string(cmd, priv)).decode()
-r = submit_command(cmd, signature_b64=sig)
-print(r)
-"
-```
-
-### Expected Output
-
-```json
-{"success": true, "message": "Executed MOVE_FORWARD", "command": "MOVE_FORWARD", "arg": 5.0, "state": {"x": 5.0, "y": 0.0, "heading_deg": 0.0, "is_moving": false}}
-```
-
-### Security Reasoning
-
-- Whitelist: only known safe commands executed
-- Signature: ensures commands originate from trusted key holder
-- Phishing check: blocks commands from phishing-like sources (AI-powered attack vector)
-
----
-
-## STEP 6: API Layer
-
-### Implemented
-
-- **`backend/app/api/routes_phishing.py`**: POST /api/phishing/check
-  - Request: `{ "message": "..." }`
-  - Response: `{ "score", "is_phishing", "message" }`
-
-- **`backend/app/api/routes_crypto.py`**: POST /api/crypto/sign, POST /api/crypto/verify
-  - Sign: `{ "message": "..." }` → `{ "message", "signature_b64" }`
-  - Verify: `{ "message", "signature_b64" }` → `{ "valid", "message" }`
-
-- **`backend/app/api/routes_robot.py`**: GET /api/robot/state, POST /api/robot/command
-  - State: `{ "state", "allowed_commands" }`
-  - Command: `{ "command", "signature_b64", "source_context?" }`
-
-### How to Run
-
-```powershell
-cd cryptoguard-r\backend
-..\venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-Visit http://localhost:8000/docs for Swagger UI.
-
----
-
-## STEP 7: Frontend Dashboard
-
-### Implemented
-
-- **`frontend/index.html`**: Phishing check + Robot command sections
-- **`frontend/style.css`**: Dark theme, clean layout
-- **`frontend/app.js`**: Vanilla JS, no frameworks
-
-### Features
-
-- Input message/email → Show phishing score
-- Send signed command → Display robot response
-- API status indicator
-- Served at `/ui/` when backend runs
-
-### How to Run
-
-1. Start backend: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
-2. Visit http://localhost:8000/ui/
-
----
-
-## STEP 8: Testing
-
-### Implemented
-
-- **`backend/tests/test_phishing.py`**: AI detection, dataset load
-- **`backend/tests/test_crypto.py`**: Sign/verify, AES, SHA-256
-- **`backend/tests/test_robot.py`**: Command rejection (unsigned, invalid sig, unknown), signed acceptance
-
-### How to Run
-
-```powershell
-cd cryptoguard-r\backend
-..\venv\Scripts\python.exe -m pytest tests/ -v
-```
-
-### Expected Output
-
-```
-tests/test_crypto.py::test_sign_verify PASSED
-tests/test_crypto.py::test_invalid_signature PASSED
-tests/test_crypto.py::test_aes_encrypt_decrypt PASSED
-tests/test_crypto.py::test_sha256_hash PASSED
-tests/test_phishing.py::test_phishing_score_spam PASSED
-tests/test_phishing.py::test_phishing_score_legit PASSED
-tests/test_phishing.py::test_load_dataset PASSED
-tests/test_robot.py::test_command_rejected_unsigned PASSED
-tests/test_robot.py::test_command_rejected_invalid_signature PASSED
-tests/test_robot.py::test_command_accepted_signed PASSED
-tests/test_robot.py::test_unknown_command_rejected PASSED
-11 passed
-```
-
----
-
-## STEP 9: Security Hardening
-
-### Implemented
-
-- **Rate limiting**: 100 requests/60s per IP (configurable via .env)
-- **Input validation**: Pydantic models with length limits, sanitization
-- **Replay prevention**: Duplicate (command, signature) within 5 min rejected
-- **Secure defaults**: No hardcoded secrets; env-based config
-
-### Files
-
-- `backend/app/core/security.py`: Rate limit, replay check, sanitize
-- `backend/app/core/rate_limit.py`: Rate limit middleware
-- `backend/app/robot/command_gateway.py`: Replay check before execution
-
----
-
-## User Verification & External Needs
-
-### Per-step verification
-
-| Step | What to verify | External help needed? |
-|------|----------------|------------------------|
-| **1** | `uvicorn` runs, `/` returns JSON | None |
-| **2** | Logs in `logs/cryptoguard-r.log` | None |
-| **3** | Sign/verify, AES run in README | None |
-| **4** | Train model, `get_phishing_score` returns 0–1 | Dataset: `spam.csv` or `phishing_emails.csv` |
-| **5** | Signed command executes; unsigned rejected | None |
-| **6** | Swagger at `/docs`, API calls succeed | None |
-| **7** | Dashboard at `/ui/`, phishing check and robot work | None |
-| **8** | `pytest tests/` — 12 passed | None |
-| **9** | Replay test passes; rate limit returns 429 after threshold | None |
-| **10** | README complete | None |
-
-### External resources
-
-- **Datasets**: `spam.csv` (UCI SMS) or `phishing_emails.csv` for STEP 4. See dataset section above.
-- **API keys**: None required.
-- **Hardware**: None; robot is simulated.
-- **Third-party services**: None.
+## 🚀 How to Reset Isolation Mode (The Admin Matrix)
+
+Once an operator locks the network via a cyber threat, the Administrator must clear it:
+1. Make sure you don't use the Operator portal. Use the **Cryptographic Admin** portal on the login screen.
+2. Login with Master Credentials: Username `admin` and Password `admin`.
+3. In the top right of the Master Control dashboard, you will see a red flashing **"Reset Network Isolation"** button.
+4. Click this to restore hardware uplink to all operators.
+
+For full setup procedures, see **[RUN_INSTRUCTIONS.md](RUN_INSTRUCTIONS.md)**.
