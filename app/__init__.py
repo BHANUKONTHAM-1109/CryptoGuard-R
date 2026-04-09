@@ -1,1 +1,0 @@
-"""CryptoGuard-R Backend Application."""

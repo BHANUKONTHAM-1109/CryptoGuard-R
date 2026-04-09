@@ -1,3 +1,8 @@
+# Environment Data
+.env
+.env.*
+!.env.example
+
 # Virtual environment
 venv/
 .venv/
@@ -36,3 +41,17 @@ models/
 # Logs
 logs/
 *.log
+
+# Sensitive Files
+keys/
+*.pem
+*.pub
+private/
+
+# Data
+datasets/
+*.csv
+
+# OS
+.DS_Store
+Thumbs.db
