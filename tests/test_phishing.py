@@ -5,7 +5,12 @@ from pathlib import Path
 
 # Ensure backend is on path
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys_path = Path(__file__).resolve().parent.parent
+backend_path = sys_path / "backend"
+if str(backend_path) not in sys.path:
+    sys.path.insert(0, str(backend_path))
+if str(sys_path) not in sys.path:
+    sys.path.insert(0, str(sys_path))
 
 
 def test_phishing_score_spam():

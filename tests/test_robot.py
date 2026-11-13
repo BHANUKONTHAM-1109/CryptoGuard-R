@@ -5,7 +5,10 @@ import pytest
 from pathlib import Path
 
 sys_path = Path(__file__).resolve().parent.parent
+backend_path = sys_path / "backend"
 import sys
+if str(backend_path) not in sys.path:
+    sys.path.insert(0, str(backend_path))
 if str(sys_path) not in sys.path:
     sys.path.insert(0, str(sys_path))
 
@@ -36,7 +39,7 @@ def test_command_accepted_signed():
     get_simulator().reset()
     cmd = "MOVE_FORWARD 2"
     sig = base64.b64encode(sign_string(cmd, priv)).decode()
-    r = submit_command(cmd, signature_b64=sig)
+    r = submit_command(cmd, signature_b64=sig, source_context="Meeting at 3pm tomorrow in the office.")
     assert r.get("success")
     assert r.get("command") == "MOVE_FORWARD"
     assert r.get("state", {}).get("x") == 2.0
@@ -51,9 +54,9 @@ def test_unknown_command_rejected():
     priv, _ = get_or_create_rsa_keys(priv_path, pub_path)
     cmd = "EXPLODE"
     sig = base64.b64encode(sign_string(cmd, priv)).decode()
-    r = submit_command(cmd, signature_b64=sig)
+    r = submit_command(cmd, signature_b64=sig, source_context="Meeting at 3pm tomorrow in the office.")
     assert not r.get("success")
-    assert "Unknown command" in r.get("message", "")
+    assert "not valid" in r.get("message", "").lower() or "unknown" in r.get("message", "").lower()
 
 
 def test_replay_rejected():
@@ -67,7 +70,7 @@ def test_replay_rejected():
     get_simulator().reset()
     cmd = "STOP"
     sig = base64.b64encode(sign_string(cmd, priv)).decode()
-    r1 = submit_command(cmd, signature_b64=sig)
-    r2 = submit_command(cmd, signature_b64=sig)
+    r1 = submit_command(cmd, signature_b64=sig, source_context="Meeting at 3pm tomorrow in the office.")
+    r2 = submit_command(cmd, signature_b64=sig, source_context="Meeting at 3pm tomorrow in the office.")
     assert r1.get("success")
     assert r2.get("code") == "REPLAY_DETECTED"

@@ -5,7 +5,10 @@ import pytest
 from pathlib import Path
 
 sys_path = Path(__file__).resolve().parent.parent
+backend_path = sys_path / "backend"
 import sys
+if str(backend_path) not in sys.path:
+    sys.path.insert(0, str(backend_path))
 if str(sys_path) not in sys.path:
     sys.path.insert(0, str(sys_path))
 
